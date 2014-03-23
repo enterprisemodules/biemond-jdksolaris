@@ -1,5 +1,6 @@
 # Solaris JAVA SE 7 puppet module
 =================================
+[![Build Status](https://travis-ci.org/biemond/biemond-jdksolaris.png)](https://travis-ci.org/biemond/biemond-jdksolaris)
 
 installs only the java tar.gz files
 
