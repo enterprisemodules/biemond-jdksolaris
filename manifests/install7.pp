@@ -1,3 +1,5 @@
+#
+#
 define jdksolaris::install7 (
   $version              = '7u45',
   $fullVersion          = 'jdk1.7.0_45',
@@ -19,12 +21,12 @@ define jdksolaris::install7 (
 
   case $::architecture {
     'i86pc': {
-       $type_x64 =  'x64'
-       $type     = 'i586'
+      $type_x64 =  'x64'
+      $type     = 'i586'
     }
     'default': {
-       $type_x64 = 'sparcv9'
-       $type     = 'sparc'
+      $type_x64 = 'sparcv9'
+      $type     = 'sparc'
     }
   }
 
@@ -50,8 +52,8 @@ define jdksolaris::install7 (
   }
 
   # check java install folder
-  if ! defined(File["/usr/jdk"]) {
-    file { "/usr/jdk" :
+  if ! defined(File['/usr/jdk']) {
+    file { '/usr/jdk' :
       ensure  => directory,
       replace => false,
       owner   => 'root',
@@ -86,28 +88,24 @@ define jdksolaris::install7 (
 
   # extract gz file in /usr/jdk
   exec { "extract java ${fullVersion}":
-    cwd        => "/usr/jdk",
-    command    => "gunzip -d ${downloadDir}/${jdkfile}.tar.gz ; tar -xvf ${downloadDir}/${jdkfile}.tar",
-    creates    => "/usr/jdk/${fullVersion}",
-    require    => [File["/usr/jdk"],
-                   File["${downloadDir}/${jdkfile}.tar.gz"],
-                  ],
-    path       => $path,
-    logoutput  => false,
+    cwd       => '/usr/jdk',
+    command   => "gunzip -d ${downloadDir}/${jdkfile}.tar.gz ; tar -xvf ${downloadDir}/${jdkfile}.tar",
+    creates   => "/usr/jdk/${fullVersion}",
+    require   => File['/usr/jdk',"${downloadDir}/${jdkfile}.tar.gz"],
+    path      => $path,
+    logoutput => false,
   }
 
   # extract x64 gz file in /usr/jdk
   if ($x64 == true) {
     exec { "extract java ${jdkfile64}":
-      cwd        => "/usr/jdk",
-      command    => "gunzip -d ${downloadDir}/${jdkfile64}.tar.gz ; tar -xvf ${downloadDir}/${jdkfile64}.tar",
-      creates    => "/usr/jdk/${fullVersion}/bin/amd64",
-      require    => [File["/usr/jdk"],
-                     Exec["extract java ${fullVersion}"],
-                     File["${downloadDir}/${jdkfile64}.tar.gz"],
-                    ],
-      path       => $path,
-      logoutput  => false,
+      cwd       => '/usr/jdk',
+      command   => "gunzip -d ${downloadDir}/${jdkfile64}.tar.gz ; tar -xvf ${downloadDir}/${jdkfile64}.tar",
+      creates   => "/usr/jdk/${fullVersion}/bin/amd64",
+      require   => [File['/usr/jdk',"${downloadDir}/${jdkfile64}.tar.gz"],
+                    Exec["extract java ${fullVersion}"],],
+      path      => $path,
+      logoutput => false,
     }
   }
 

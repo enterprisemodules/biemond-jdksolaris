@@ -1,20 +1,28 @@
 {
   "name": "biemond-jdksolaris",
-  "version": "0.1.1",
-  "summary": "Oracle JDK7 puppet module for Oracle Sun Solaris",
+  "version": "0.1.2",
+  "summary": "Oracle JDK7 puppet module for Oracle Sun Solaris 10, 11, 11.2",
   "author": "Edwin Biemond",
-  "description": "Oracle JDK7 Java puppet module for Oracle Solaris",
-  "dependencies": [],
+  "dependencies": [
+
+  ],
   "source": "https://github.com/biemond/biemond-jdksolaris",
   "project_page": "https://github.com/biemond/biemond-jdksolaris",
-  "license": "Apache 2.0",
-  "tags": ["jdk7", "oracle","java", "solaris", "jdk"],
+  "license": "Apache-2.0",
+  "tags": [
+    "jdk7",
+    "oracle",
+    "java",
+    "solaris",
+    "jdk"
+  ],
   "operatingsystem_support": [
     {
       "operatingsystem": "Solaris",
       "operatingsystemrelease": [
         "10",
-        "11"
+        "11",
+        "11.2"
       ]
     }
   ],
@@ -27,5 +35,5 @@
       "name": "puppet",
       "version_requirement": ">=2.7.20"
     }
-  ]   
+  ]
 }
