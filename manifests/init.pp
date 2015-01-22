@@ -1,7 +1,7 @@
-# Class: jdk_solaris
+# Class: jdksolaris
 #
-# This module manages jdk_solaris
+# This module manages jdksolaris
 #
-class jdk_solaris {
+class jdksolaris {
 
 }
