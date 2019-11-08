@@ -1,20 +1,20 @@
 #
 #
 define jdksolaris::install7 (
-  $version              = '7u45',
-  $fullVersion          = 'jdk1.7.0_45',
-  $x64                  = true,
-  $downloadDir          = '/install',
-  $sourcePath           = "puppet:///modules/${module_name}/",
+  $version      = '7u45',
+  $full_version = 'jdk1.7.0_45',
+  $x64          = true,
+  $download_dir = '/install',
+  $source_path  = "puppet:///modules/${module_name}/",
 )
 {
 
   case $::kernel {
     'SunOS': {
-      $installVersion   = 'solaris'
+      $install_version  = 'solaris'
       $path             = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
     }
-    'default': {
+    default: {
       fail('Unrecognized operating system, please use it on a Solaris host')
     }
   }
@@ -24,99 +24,91 @@ define jdksolaris::install7 (
       $type_x64 =  'x64'
       $type     = 'i586'
     }
-    'default': {
+    default: {
       $type_x64 = 'sparcv9'
       $type     = 'sparc'
     }
   }
 
-  $jdkfile   = "jdk-${version}-${installVersion}-${type}"
-  $jdkfile64 = "jdk-${version}-${installVersion}-${type_x64}"
+  $jdkfile   = "jdk-${version}-${install_version}-${type}"
+  $jdkfile64 = "jdk-${version}-${install_version}-${type_x64}"
 
-  exec { "create ${$downloadDir} directory":
-    command => "mkdir -p ${$downloadDir}",
-    unless  => "test -d ${$downloadDir}",
+  exec { "create ${$download_dir} directory":
+    command => "mkdir -p ${$download_dir}",
+    unless  => "test -d ${$download_dir}",
     path    => $path,
   }
 
   # check install folder
-  if !defined(File[$downloadDir]) {
-    file { $downloadDir:
+  if !defined(File[$download_dir]) {
+    file { $download_dir:
       ensure  => directory,
-      require => Exec["create ${$downloadDir} directory"],
+      require => Exec["create ${$download_dir} directory"],
       replace => false,
       owner   => 'root',
-      group   => 'root',
+      group   => 'sys',
       mode    => '0777',
     }
   }
 
   # check java install folder
-  if ! defined(File['/usr/jdk']) {
-    file { '/usr/jdk' :
-      ensure  => directory,
-      replace => false,
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0777',
+  if ! defined(File['/usr/java']) {
+    file { '/usr/java' :
+      ensure => directory,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0777',
     }
   }
 
   # download jdk to client
-  file { "${downloadDir}/${jdkfile}.tar.gz":
-    ensure  => file,
-    source  => "${sourcePath}/${jdkfile}.tar.gz",
-    require => File[$downloadDir],
-    replace => false,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0777',
-  }
 
-  # download jdk64 to client
+  # download jdk64 to clien t
   if ($x64 == true) {
-    file { "${downloadDir}/${jdkfile64}.tar.gz":
+    file { "${download_dir}/${jdkfile64}.tar.gz":
       ensure  => file,
-      source  => "${sourcePath}/${jdkfile64}.tar.gz",
-      require => File[$downloadDir],
+      source  => "${source_path}/${jdkfile64}.tar.gz",
       replace => false,
       owner   => 'root',
-      group   => 'root',
+      group   => 'sys',
       mode    => '0777',
+      require => File[$download_dir],
     }
-  }
-
-  # extract gz file in /usr/jdk
-  exec { "extract java ${fullVersion}":
-    cwd       => '/usr/jdk',
-    command   => "gunzip -d ${downloadDir}/${jdkfile}.tar.gz ; tar -xvf ${downloadDir}/${jdkfile}.tar",
-    creates   => "/usr/jdk/${fullVersion}",
-    require   => File['/usr/jdk',"${downloadDir}/${jdkfile}.tar.gz"],
-    path      => $path,
-    logoutput => false,
-  }
-
-  # extract x64 gz file in /usr/jdk
-  if ($x64 == true) {
-    exec { "extract java ${jdkfile64}":
-      cwd       => '/usr/jdk',
-      command   => "gunzip -d ${downloadDir}/${jdkfile64}.tar.gz ; tar -xvf ${downloadDir}/${jdkfile64}.tar",
-      creates   => "/usr/jdk/${fullVersion}/bin/amd64",
-      require   => [File['/usr/jdk',"${downloadDir}/${jdkfile64}.tar.gz"],
-                    Exec["extract java ${fullVersion}"],],
+    -> exec { "extract java ${jdkfile64}":
+      cwd       => '/usr/java',
+      command   => "gunzip -d ${download_dir}/${jdkfile64}.tar.gz ; tar -xvf ${download_dir}/${jdkfile64}.tar",
+      creates   => "/usr/java/${full_version}/bin/amd64",
       path      => $path,
       logoutput => false,
+      require   => File['/usr/java'],
+      before    => File['/usr/bin/java'],
+    }
+
+  } else {
+    file { "${download_dir}/${jdkfile}.tar.gz":
+      ensure  => file,
+      source  => "${source_path}/${jdkfile}.tar.gz",
+      owner   => 'root',
+      group   => 'sys',
+      mode    => '0777',
+      require => File[$download_dir],
+    }
+    -> exec { "extract java ${full_version}":
+      cwd       => '/usr/java',
+      command   => "gunzip -d ${download_dir}/${jdkfile}.tar.gz ; tar -xvf ${download_dir}/${jdkfile}.tar",
+      creates   => "/usr/java/${full_version}",
+      path      => $path,
+      logoutput => false,
+      require   => File['/usr/java'],
+      before    => File['/usr/bin/java'],
     }
   }
 
-  # java link to latest
-  file { '/usr/java':
-    ensure  => link,
-    target  => "/usr/jdk/${fullVersion}/bin/java",
-    require => Exec["extract java ${fullVersion}"],
-    replace => false,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0777',
+  file { '/usr/bin/java':
+    ensure => link,
+    target => "/usr/java/${full_version}/bin/java",
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0777',
   }
 }
